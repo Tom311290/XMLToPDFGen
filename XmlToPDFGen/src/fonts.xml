@@ -1,0 +1,28 @@
+<configuration>
+	<fonts>
+	 <font metrics-file="arial.xml" kerning="yes" embed-file="arial.ttf">
+	    <font-triplet name="Arial" style="normal" weight="normal"/>    
+	 </font>
+	 <font metrics-file="arialbd.xml" kerning="yes" embed-file="arialbd.ttf">
+	    <font-triplet name="ArialBold" style="normal" weight="normal"/>    
+	    <font-triplet name="ArialBold" style="normal" weight="bold"/>
+	 </font>
+	 <font metrics-file="arialbi.xml" kerning="yes" embed-file="arialbi.ttf">
+	    <font-triplet name="ArialItalic" style="normal" weight="normal"/>  
+	    <font-triplet name="ArialBold" style="italic" weight="normal"/>  
+	 </font>
+	 <font metrics-file="ariali.xml" kerning="yes" embed-file="ariali.ttf">
+	    <font-triplet name="ArialBoldItalic" style="normal" weight="normal"/> 
+	    <font-triplet name="ArialBold" style="italic" weight="bold"/>   
+	 </font>
+	 <font metrics-file="lucon.xml" kerning="yes" embed-file="lucon.ttf">
+	    <font-triplet name="LucidaConsole" style="normal" weight="normal"/>
+	    <font-triplet name="LucidaConsoleBold" style="normal" weight="bold"/>
+	    <font-triplet name="LucidaConsoleItalic" style="italic" weight="normal"/>
+	    <font-triplet name="LucidaConsoleBoldItalic" style="italic" weight="bold"/>
+	 </font>
+	</fonts>
+</configuration>
+
+
+
