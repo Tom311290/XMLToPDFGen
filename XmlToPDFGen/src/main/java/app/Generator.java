@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -36,6 +37,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -70,18 +72,36 @@ public class Generator implements Initializable{
 	private File xmlFile;
 	private File xslFile;
 	private File outputFile;
+	private Double progress = 0.0;
+	private String configFile = "";
+	private File userConfigFile;
+	private Options options;
 	
 	public void initialize(URL location, ResourceBundle resources) {
-		
+				
+		try {
+			
+			logScreen.appendText("Loading FOP configuration\n");	
+			
+			configFile = "src/userconfig.xml";
+			InputStream in = getClass().getResourceAsStream("./userconfig.xml");
+			userConfigFile = new File(configFile);
+			options = new Options(userConfigFile);
+			
+			logScreen.appendText("FOP user configuration succsessfully loaded!\n");
+			
+		} catch (FOPException e) {
+			logScreen.appendText("Problem with loading FOP user configuration!\nCOnfiguration not loaded!\n");
+			logScreen.appendText(e.getMessage());
+			
+		}
+
 	}
 	
 	@FXML
-	public void generate(){
-
-		logScreen.setText("");
+	public void generate(){	
 		
-		Double progress = 0.0;
-		String configFile = "src//userconfig.xml";
+		logScreen.appendText("XML --> PDF conversion started!\n");
 		ArrayList<TextField> textFields = new ArrayList<TextField> ();
 		
 		textFields.add(XMLFilePath);
@@ -93,26 +113,27 @@ public class Generator implements Initializable{
 		
 		if(!messages.equals("")){
 			Alert alert = new Alert(AlertType.ERROR, messages, ButtonType.OK);
+			logScreen.appendText("XML --> PDF conversion stopped! Some of selected path/s is/are invalid");
 			alert.showAndWait();
 			return;
-		}
-		
+		}		
 		
 		String outFile = outputFile.getAbsolutePath() + "\\" + outputFileName.getText();
 		String xmlFile = this.xmlFile.getAbsolutePath();
 		String xslFile = this.xslFile.getAbsolutePath();
 		
+		logScreen.appendText("Loading selected files.\n");
 		FileOutputStream output = null;
-		File userConfigFile = new File(configFile);
+		
 		Driver driver = new Driver();		
 		Logger logger = new ConsoleLogger(ConsoleLogger.LEVEL_INFO);
 		
 		MessageHandler.setScreenLogger(logger);
-		driver.setLogger(logger);		
+		driver.setLogger(logger);
 		driver.setRenderer(Driver.RENDER_PDF);		
 		
 		try {
-			Options options = new Options(userConfigFile);
+		
 			//Setup the OutputStream for FOP
 			output = new FileOutputStream(outFile);
 			driver.setOutputStream(output);
@@ -130,16 +151,15 @@ public class Generator implements Initializable{
 			//Setup the OutputStream for FOP
 			transformer = transformerFactory.newTransformer(xsltSrc);
 			//Start the transformation and rendering process
+			logScreen.appendText("Starting transformation.\n");
 			transformer.transform(src, res);
+			logScreen.appendText("Transformation completed! Opening file:" + outFile +"\n");
 
 			output.close();
 			
-			 File myFile = new File(outFile);
-		     Desktop.getDesktop().open(myFile);
+			File myFile = new File(outFile);
+			Desktop.getDesktop().open(myFile);
 			
-		} catch (FOPException e) {
-			logScreen.appendText(e.getMessage());
-			e.printStackTrace();
 		} catch (FileNotFoundException e) {
 			logScreen.appendText(e.getMessage());
 			e.printStackTrace();
@@ -152,38 +172,30 @@ public class Generator implements Initializable{
 		} catch (IOException e) {
 			logScreen.appendText(e.getMessage());
 			e.printStackTrace();
-		}
-		
-		
+		}		
 	}
 	
 	@FXML
 	public void chooseXMLFile(ActionEvent ae){
 		
 		String[] extension = {"XML", "*.xml"};
-		xmlFile = fileChooser(ae, extension);
-		
+		xmlFile = fileChooser(ae, extension);		
 		XMLFilePath.setText(xmlFile != null ? xmlFile.getAbsolutePath() : "");
-
 	}
 	
 	@FXML
 	public void chooseXSLFile(ActionEvent ae){
 		
 		String[] extension = {"XSL", "*.xsl"};
-		xslFile = fileChooser(ae, extension);
-		
+		xslFile = fileChooser(ae, extension);		
 		XSLFilePath.setText(xslFile != null ? xslFile.getAbsolutePath() : "");
-
 	}	
 
 	@FXML
 	public void chooseOutputFolder(ActionEvent ae){
 		
-		outputFile = directoryChooser(ae);
-		
+		outputFile = directoryChooser(ae);		
 		outputFilePath.setText(outputFile != null ? outputFile.getAbsolutePath() : "");
-
 	}
 	
 	private File fileChooser(ActionEvent ae, String[] extension){

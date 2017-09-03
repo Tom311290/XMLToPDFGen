@@ -61,22 +61,22 @@ fontBaseDir: Similar to baseDir, except that this value is used for fonts. If
 
 <fonts>
 
-	 <font metrics-file="src//fonts/arial.xml" kerning="yes" embed-file="src//fonts/arial.ttf">
+	 <font metrics-file="src/fonts/arial.xml" kerning="yes" embed-file="src/fonts/arial.ttf">
 	    <font-triplet name="Arial" style="normal" weight="normal"/>    
 	 </font>
-	 <font metrics-file="src//fonts/arialbd.xml" kerning="yes" embed-file="src//fonts/arialbd.ttf">
+	 <font metrics-file="src/fonts/arialbd.xml" kerning="yes" embed-file="src/fonts/arialbd.ttf">
 	    <font-triplet name="ArialBold" style="normal" weight="normal"/>    
 	    <font-triplet name="ArialBold" style="normal" weight="bold"/>
 	 </font>
-	 <font metrics-file="src//fonts/arialbi.xml" kerning="yes" embed-file="src//fonts/arialbi.ttf">
+	 <font metrics-file="src/fonts/arialbi.xml" kerning="yes" embed-file="src/fonts/arialbi.ttf">
 	    <font-triplet name="ArialItalic" style="normal" weight="normal"/>  
 	    <font-triplet name="ArialBold" style="italic" weight="normal"/>  
 	 </font>
-	 <font metrics-file="src//fonts/ariali.xml" kerning="yes" embed-file="src//fonts/ariali.ttf">
+	 <font metrics-file="src/fonts/ariali.xml" kerning="yes" embed-file="src/fonts/ariali.ttf">
 	    <font-triplet name="ArialBoldItalic" style="normal" weight="normal"/> 
 	    <font-triplet name="ArialBold" style="italic" weight="bold"/>   
 	 </font>
-	 <font metrics-file="src//fonts/lucon.xml" kerning="yes" embed-file="src//fonts/lucon.ttf">
+	 <font metrics-file="src/fonts/lucon.xml" kerning="yes" embed-file="src/fonts/lucon.ttf">
 	    <font-triplet name="LucidaConsole" style="normal" weight="normal"/>
 	    <font-triplet name="LucidaConsoleBold" style="normal" weight="bold"/>
 	    <font-triplet name="LucidaConsoleItalic" style="italic" weight="normal"/>
