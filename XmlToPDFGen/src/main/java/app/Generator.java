@@ -71,7 +71,6 @@ public class Generator implements Initializable{
 	private File xslFile;
 	private File outputFile;
 	
-	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		
 	}
