@@ -2,6 +2,7 @@ package app;
 
 import java.awt.Desktop;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 import javax.xml.transform.ErrorListener;
@@ -26,6 +28,7 @@ import org.apache.avalon.framework.logger.Logger;
 import org.apache.fop.apps.Driver;
 import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.Options;
+import org.apache.fop.configuration.ConfigurationReader;
 import org.apache.fop.messaging.MessageHandler;
 
 import com.sun.javafx.image.impl.ByteIndexed.Getter;
@@ -76,51 +79,61 @@ public class Generator implements Initializable{
 	private String configFile = "";
 	private File userConfigFile;
 	private Options options;
-	
+		
 	public void initialize(URL location, ResourceBundle resources) {
-				
+		
 		try {
 			
-			logScreen.appendText("Loading FOP configuration\n");	
+			Properties prop = new Properties();
 			
-			configFile = "src/userconfig.xml";
-			InputStream in = getClass().getResourceAsStream("./userconfig.xml");
-			userConfigFile = new File(configFile);
-			options = new Options(userConfigFile);
+			logScreen.appendText("Loading application properties\n");
+			configFile = "config/AppConfiguration.properties";			
+			InputStream appConfig = getClass().getResourceAsStream(configFile);
+			// load a properties file
+			prop.load(appConfig);
+			logScreen.appendText("Application properties loaded!\n");
+			
+			logScreen.appendText("Fetching FOP property file path\n");
+			String FOPpropertyFile = prop.getProperty("FOPconfigFilePath");
+			logScreen.appendText("FOP property file path fetched: " + FOPpropertyFile + "\n");			
+
+			logScreen.appendText("Loading FOP configuration\n");			
+			File file = new File(FOPpropertyFile);
+			options = new Options(file);
 			
 			logScreen.appendText("FOP user configuration succsessfully loaded!\n");
 			
 		} catch (FOPException e) {
-			logScreen.appendText("Problem with loading FOP user configuration!\nCOnfiguration not loaded!\n");
-			logScreen.appendText(e.getMessage());
+			logScreen.appendText(e.toString() + "\n");
 			
+		} catch (FileNotFoundException e) {
+			logScreen.appendText(e.toString() + "\n");
+		} catch (IOException e) {
+			logScreen.appendText(e.toString() + "\n");
 		}
-
 	}
 	
 	@FXML
 	public void generate(){	
 		
-		logScreen.appendText("XML --> PDF conversion started!\n");
-		ArrayList<TextField> textFields = new ArrayList<TextField> ();
+		logScreen.appendText("XML --> PDF conversion started!\n");		
+
+		String messages = "";
 		
-		textFields.add(XMLFilePath);
-		textFields.add(XSLFilePath);
-		textFields.add(outputFilePath);
-		textFields.add(outputFileName);
-		
-		String messages = checkFields(textFields);
+		messages = checkField(XMLFilePath);
+		messages = messages + checkField(XSLFilePath);
+		messages = messages + checkField(outputFilePath);
+		messages = messages + checkField(outputFileName);
 		
 		if(!messages.equals("")){
 			Alert alert = new Alert(AlertType.ERROR, messages, ButtonType.OK);
-			logScreen.appendText("XML --> PDF conversion stopped! Some of selected path/s is/are invalid");
+			logScreen.appendText("XML --> PDF conversion stopped! Some of selected path/s is/are invalid!\n");
+			logScreen.appendText("\n");
 			alert.showAndWait();
 			return;
 		}		
 		
-		String outFile = outputFile.getAbsolutePath() + "\\" + outputFileName.getText();
-		String xmlFile = this.xmlFile.getAbsolutePath();
-		String xslFile = this.xslFile.getAbsolutePath();
+		String outFile = outputFile.getAbsolutePath() +  "\\" + outputFileName.getText();
 		
 		logScreen.appendText("Loading selected files.\n");
 		FileOutputStream output = null;
@@ -161,17 +174,13 @@ public class Generator implements Initializable{
 			Desktop.getDesktop().open(myFile);
 			
 		} catch (FileNotFoundException e) {
-			logScreen.appendText(e.getMessage());
-			e.printStackTrace();
+			logScreen.appendText(e.toString() + "\n");
 		} catch (TransformerConfigurationException e) {
-			logScreen.appendText(e.getMessage());
-			e.printStackTrace();
+			logScreen.appendText(e.toString() + "\n");
 		} catch (TransformerException e) {
-			logScreen.appendText(e.getMessage());
-			e.printStackTrace();
+			logScreen.appendText(e.toString() + "\n");
 		} catch (IOException e) {
-			logScreen.appendText(e.getMessage());
-			e.printStackTrace();
+			logScreen.appendText(e.toString() + "\n");
 		}		
 	}
 	
@@ -181,6 +190,8 @@ public class Generator implements Initializable{
 		String[] extension = {"XML", "*.xml"};
 		xmlFile = fileChooser(ae, extension);		
 		XMLFilePath.setText(xmlFile != null ? xmlFile.getAbsolutePath() : "");
+		
+		checkField(XMLFilePath);
 	}
 	
 	@FXML
@@ -189,6 +200,8 @@ public class Generator implements Initializable{
 		String[] extension = {"XSL", "*.xsl"};
 		xslFile = fileChooser(ae, extension);		
 		XSLFilePath.setText(xslFile != null ? xslFile.getAbsolutePath() : "");
+		
+		checkField(XSLFilePath);
 	}	
 
 	@FXML
@@ -196,6 +209,8 @@ public class Generator implements Initializable{
 		
 		outputFile = directoryChooser(ae);		
 		outputFilePath.setText(outputFile != null ? outputFile.getAbsolutePath() : "");
+		
+		checkField(outputFilePath);
 	}
 	
 	private File fileChooser(ActionEvent ae, String[] extension){
@@ -204,7 +219,7 @@ public class Generator implements Initializable{
 		fileChooser.setTitle("Select path");
 		fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(extension[0], extension[1]));
 
-		File file = fileChooser.showOpenDialog(getStage(ae));
+		File file = fileChooser.showOpenDialog(getStage(ae));		
 		
 		return file;
 	}
@@ -225,28 +240,27 @@ public class Generator implements Initializable{
 	    return theStage;
 	}
 	
-	private String checkFields(ArrayList<TextField> fieldList){
+	private String checkField(TextField field){
 		
 		String message = "";
 		
-		for(TextField textField : fieldList){
-			if (textField != null && !textField.getText().equals("")){
-				textField.setStyle("");
-				
-			}else{
-				textField.setStyle("-fx-effect: innershadow( three-pass-box, rgba( 255, 0, 0, 0.5 ), 10, 0, 0, 0 );");
-				
-				if(textField.getId().equals("XMLFilePath")){
-					message = "XML file path is invalid\n";
-				}else if(textField.getId().equals("XSLFilePath")){
-					message = message + "XSL file path is invalid\n";
-				}else if(textField.getId().equals("outputFilePath")){
-					message = message + "Output file path is invalid\n";
-				}else if(textField.getId().equals("outputFileName")){
-					message = message + "Output file name is invalid";
-				}
+		if (field != null && !field.getText().equals("")){
+			field.setStyle("");
+			
+		}else{
+			field.setStyle("-fx-effect: innershadow( three-pass-box, rgba( 255, 0, 0, 0.5 ), 10, 0, 0, 0 );");
+			
+			if(field.getId().equals("XMLFilePath")){
+				message = "XML file path is invalid\n";
+			}else if(field.getId().equals("XSLFilePath")){
+				message = "XSL file path is invalid\n";
+			}else if(field.getId().equals("outputFilePath")){
+				message = "Output file path is invalid\n";
+			}else if(field.getId().equals("outputFileName")){
+				message = "Output file name is invalid";
 			}
 		}
+		
 		return message;
 	}
 }
